@@ -1,0 +1,16 @@
+fastapi
+fastapi-users[sqlalchemy]
+sqlalchemy
+sqlalchemy[asyncio]
+pydantic
+arq
+starlette
+openai
+python-dotenv
+alembic
+uvicorn
+alembic_postgresql_enum
+asyncpg
+jinja2
+markdown
+python-docx

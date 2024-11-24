@@ -1,0 +1,201 @@
+{% extends "functionality_page.html" %}
+
+{% block content %}
+<style>
+<style>
+/* Base styles for content area */
+.content-area {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    overflow-x: hidden; /* Hide horizontal overflow */
+}
+
+/* Adjustments for small screens */
+@media (max-width: 768px) {
+    .content-area .level-1,
+    .content-area .level-2,
+    .content-area .level-3 {
+        margin-left: 0.5rem;
+    }
+}
+
+/* Styles for code blocks */
+.content-area pre,
+.content-area code {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Styling for section headings */
+.content-area .section-heading {
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Styling for subheadings */
+.content-area .subheading {
+    font-weight: bold;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Styling for bullet points */
+.content-area .bullet-point {
+    margin-left: 1rem;
+    list-style-type: disc;
+}
+
+/* Styling for content lines */
+.content-area .content-line {
+    margin-left: 2rem;
+}
+
+/* Separator styling */
+.content-area .separator {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 1rem 0;
+}
+
+/* Ensure images and tables fit */
+.content-area img,
+.content-area table,
+.content-area iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Styles for pagination buttons */
+.pagination .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0 2px;
+}
+.pagination .btn-outline-primary {
+    color: #007bff;
+    border: 1px solid #007bff;
+}
+.pagination .btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+}
+.pagination .btn-current {
+    background-color: #0056b3;
+    color: white;
+    cursor: default;
+    pointer-events: none;
+    border: 1px solid #0056b3;
+}
+.pagination .btn-outline-secondary {
+    color: #6c757d;
+}
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Feedback Review heading styling */
+.feedback-heading {
+    color: #4f46e5;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+</style>
+<div class="container mt-5">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <h2 class="feedback-heading">Feedback Review</h2>
+
+    {% if feedbacks %}
+    <div class="feedback-section">
+        {% for feedback in feedbacks %}
+        <a href="javascript:void(0);" onclick="toggleFeedback({{ loop.index }});" class="text-sm text-indigo-600 hover:text-indigo-800 transition duration-300">
+            <h3 class="font-medium">Feedback for Interview: {{ feedback.feedback_name }}</h3>
+        </a>
+
+        <div id="feedback-{{ loop.index }}" class="feedback-item mb-4 hidden">
+            <div class="mb-3">
+                <label for="soft_skills" class="form-label text-lg font-medium mb-2"><strong>Soft Skills:</strong></label>
+                <div id="soft_skills" class="content-area text-sm">
+                    {{ feedback.soft_skills | safe }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="engineering_basics" class="form-label text-lg font-medium mb-2"><strong>Engineering Basics:</strong></label>
+                <div id="engineering_basics" class="content-area text-sm">
+                    {{ feedback.engineering_basics | safe }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="technical_skills" class="form-label text-lg font-medium mb-2"><strong>Technical Skills:</strong></label>
+                <div id="technical_skills" class="content-area text-sm">
+                    {{ feedback.technical_skills | safe }}
+                </div>
+            </div>
+        </div>
+        <hr>
+        {% endfor %}
+    </div>
+
+    <div class="pagination-container mt-4">
+        {% if page > 5 %}
+        <a href="?page={{ page - 5 }}&limit={{ limit }}" class="btn btn-outline-primary" style="color: #007bff; border-color: #007bff;">-5</a>
+        {% else %}
+        <span class="btn btn-outline-secondary disabled" style="color: #6c757d;">-5</span>
+        {% endif %}
+
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}&limit={{ limit }}" class="btn btn-outline-primary" style="color: #007bff; border-color: #007bff;">Previous</a>
+        {% else %}
+        <span class="btn btn-outline-secondary disabled" style="color: #6c757d;">Previous</span>
+        {% endif %}
+
+        <div class="page-links d-flex mx-2">
+            {% set min_page = 1 if page <= 5 else page - 5 %}
+            {% set max_page = total_pages if page + 5 > total_pages else page + 5 %}
+            {% for p in range(min_page, max_page + 1) %}
+                {% if p == page %}
+                    <span class="btn btn-current" style="background-color: #0056b3; color: white;">{{ p }}</span>
+                {% else %}
+                    <a href="?page={{ p }}&limit={{ limit }}" class="btn btn-outline-primary" style="color: #007bff; border-color: #007bff;">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}&limit={{ limit }}" class="btn btn-outline-primary" style="color: #007bff; border-color: #007bff;">Next</a>
+        {% else %}
+        <span class="btn btn-outline-secondary disabled" style="color: #6c757d;">Next</span>
+        {% endif %}
+
+        {% if page + 5 <= total_pages %}
+        <a href="?page={{ page + 5 }}&limit={{ limit }}" class="btn btn-outline-primary" style="color: #007bff; border-color: #007bff;">+5</a>
+        {% else %}
+        <span class="btn btn-outline-secondary disabled" style="color: #6c757d;">+5</span>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        No feedback available for this user.
+    </div>
+    {% endif %}
+</div>
+<script>
+    function toggleFeedback(index) {
+        const feedbackElement = document.getElementById('feedback-' + index);
+        feedbackElement.classList.toggle('hidden');
+    }
+</script>
+{% endblock content %}

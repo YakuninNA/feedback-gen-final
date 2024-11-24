@@ -1,0 +1,36 @@
+{% extends "home_page.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <h2 class="text-1xl font-bold text-indigo-600"> Register</h2>
+    <form action="/auth/registration" method="post">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" required class="form-control" id="username" name="username" placeholder="Username input">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" required class="form-control" id="email" name="email" placeholder="email@akvelon.com">
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">First Name</label>
+            <input type="text" required class="form-control" id="name" name="name" placeholder="Fist name input">
+        </div>
+        <div class="mb-3">
+            <label for="surname" class="form-label">Last Name</label>
+            <input type="text" required class="form-control" id="surname" name="surname" placeholder="Last name input">
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" required class="form-control" id="password" name="password" placeholder="Secure password">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock content %}

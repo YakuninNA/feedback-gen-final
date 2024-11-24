@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeedbackGenHakunaMatata</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen text-gray-800">
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto flex justify-between items-center py-4 px-6">
+            <a href="/functionality/home" class="text-3xl font-bold text-indigo-600">FeedbackGenHakunaMatata</a>
+            <ul class="flex items-center space-x-8 text-lg">
+                <li>
+                    <a href="/functionality/feedback_generation" class="text-gray-600 hover:text-indigo-600 transition duration-300">Feedback Generation</a>
+                </li>
+                <li>
+                    <a href="/functionality/feedback_review" class="text-gray-600 hover:text-indigo-600 transition duration-300">Feedback Review</a>
+                </li>
+                <li>
+                    <form action="/auth/logout" method="post" style="display: inline;">
+                        <button type="submit" class="text-gray-600 hover:text-indigo-600 transition duration-300">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-12">
+        <div id="Content" class="bg-white p-10 rounded-lg shadow-2xl">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="bg-white mt-16 py-4 shadow-inner">
+        <div class="container mx-auto text-center">
+            <p class="text-gray-600 text-sm">&copy; 2024 FeedbackGenHakunaMatata. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
