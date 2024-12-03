@@ -14,3 +14,5 @@ asyncpg
 jinja2
 markdown
 python-docx
+json-repair
+langchain

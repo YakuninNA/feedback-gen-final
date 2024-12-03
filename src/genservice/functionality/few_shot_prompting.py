@@ -1,30 +1,45 @@
-QA_EXTRACTION_FSP = """    
-Q: What is your career history?
-A: I started a career three years ago with a two-month internship at Optima Armenia, working on a desktop 
-application called Sky-suite for flight schedules and optimizations. Then, I moved to Codex as an out staff 
-employee for WebMD, working in the data integration team. 
+few_shot_extraction = """
+[
+  {{
+    "Interviewer": "What is your experience with cloud platforms?",
+    "Candidate": "I have worked with AWS and Azure, mainly using EC2 for virtual machines and S3 for storage."
+  }}
+]
 """
 
+few_shot_polish = """
+[
+  {{
+    "Interviewer": "What is the general experience with AWS services?",
+    "Candidate": "Experience includes setting up EC2 instances, RDS, and ECS containers with Fargate; familiar with Terraform and EKS Kubernetes clusters; organized applications into different subnets across multiple accounts for development, production, and staging."
+  }}
+]
+"""
 
-QA_POLISH_FSP = """
+few_shot_categorization = """
+[
+  {{
+    "Interviewer": "What is your introduction and experience in technology?",
+    "Candidate": "I started working in IT from university, where I was promoted to computer classes administrator. I loved console and Linux, which led to an Internet administrator role. I transitioned into development, working with various technologies like front-end frameworks and back-end languages. I also have experience in mobile development and DevOps, configuring servers and CI/CD pipelines. Currently, I work in a small outsourced company, handling Kubernetes and cloud configurations, but I lack experience with large-scale applications.",
+    "Category": "Introduction"
+  }}
+]
+"""
+
+few_shot_requirements = """
+Example Input:
+1. Python, Pytest;
+2. Asyncio Experience;
+3. AWS Cloud Computing;
+4. Experience with Terraform.
+
 Example Output:
-Q: What is the general experience with AWS services? 
-A: Experience includes setting up EC2 instances, RDS, and ECS containers with Fargate; familiar with Terraform and 
-EKS Kubernetes clusters; organized applications into different subnets across multiple accounts for development, 
-production, and staging.
+Python, PyTest, Asyncio
+AWS
+Terraform
 """
 
-
-QA_CATEGORIZATION_FSP = """
-Example Output:
-[{'Q': 'What is your introduction and experience in technology?', 'A': 'I started working in IT from university, where I was promoted to computer classes administrator. 
-I loved console and Linux, which led to an Internet administrator role. I transitioned into development, working with various technologies like front-end frameworks and back-end
-languages. I also have experience in mobile development and DevOps, configuring servers and CI/CD pipelines. Currently, I work in a small outsourced company, handling Kubernetes a
-nd cloud configurations, but I lack experience with large-scale applications.', 'Category': 'Introduction'}]
-"""
-
-
-EXPERIENCE_EXTRACTION_FSP = """
+few_shot_experience = """
 Example Output:
 ---
 1. Experience:
@@ -62,7 +77,7 @@ Example Output:
 """
 
 
-ENG_BASICS_EXTRACTION_FSP = """
+few_shot_engineering_basics = """
 Example Output:
 ---
 ### **Team Size:**
@@ -81,7 +96,7 @@ cross-functional tasks between different teams; easier to track using Kanban Boa
 """
 
 
-TECH_SKILLS_EXTRACTION_FSP = """
+few_shot_technical_skills = """
 Example Output:
 ---
 ### **Python:**
@@ -98,21 +113,7 @@ also a bunch of commands from the coreutils package.
 """
 
 
-REQUIREMENTS_EXTRACTION_FSP = """
-Example Input:
-1. Python, Pytest;
-2. Asyncio Experience;
-3. AWS Cloud Computing;
-4. Experience with Terraform.
-
-Example Output:
-Python, PyTest, Asyncio
-AWS
-Terraform
-"""
-
-
-INTERVIEW_NAME_EXTRACTION_FSP = """
+few_shot_interviewer_name = """
 Example Input:
 7ZjFhGaFkuPaTbj2_Andrew-Ermeneu-Interview-c6666aa6-7f38-ef11-8409-000d3ab454a8-2024-07-08-13-02-GMT-2-mp4-st
 

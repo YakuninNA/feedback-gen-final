@@ -2,19 +2,24 @@ import json
 from datetime import datetime
 
 from arq.connections import create_pool, RedisSettings
-
-from fastapi import APIRouter, UploadFile, File, Depends, Form, Request, Query
+from fastapi import (
+    APIRouter,
+    UploadFile,
+    File,
+    Depends,
+    Form,
+    Request,
+    Query,
+)
 from fastapi.responses import HTMLResponse
-
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.templating import Jinja2Templates
 
-from src.genservice.functionality.utility import convert_to_html
-from src.genservice.models import FeedbackGen
-
 from src.database import get_async_session
 from src.dependencies import fastapi_users
+from src.genservice.functionality.utility import convert_to_html
+from src.genservice.models import FeedbackGen
 
 
 router = APIRouter(
@@ -84,8 +89,11 @@ async def process_transcript(
             file_content.decode(),
             requirements,
             position,
+            user.username,
+            user.name,
+            user.surname,
             transcript.filename,
-            timestamp
+            timestamp,
         )
 
         # Return the job_id for the frontend to track

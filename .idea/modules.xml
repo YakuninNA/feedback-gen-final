@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/FeebbackGenerator.iml" filepath="$PROJECT_DIR$/.idea/FeebbackGenerator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/FeedbackGenerationService.iml" filepath="$PROJECT_DIR$/.idea/FeedbackGenerationService.iml" />
     </modules>
   </component>
 </project>

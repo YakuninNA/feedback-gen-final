@@ -1,85 +1,132 @@
 import json
-from functools import wraps
 import markdown
 import re
-import uuid
-import io
-from docx import Document
-from fastapi.responses import StreamingResponse
-from datetime import datetime
 
-from src.genservice.openai_client import client
+from json_repair import repair_json
+from langchain_core.messages import AIMessage
+from langchain_core.runnables import RunnableLambda
 
 
 # JSON to dialogue conversion
-def convert_json_to_dialogue(data: dict):
-    dialogue = ""
+def convert_json_to_dialogue(json_string):
+    # check if the input is valid json, if not, throw an error
+    try:
+        data = json.loads(json_string)
+    except json.JSONDecodeError as e:
+        raise ValueError("Input is not valid JSON") from e
+
+    if not isinstance(data, list):
+        raise ValueError("JSON data is not a list of dialogue entries")
+
+    # get rid of 'speaker_id' and 'timestamps'
+    for item in data:
+        if not isinstance(item, dict):
+            raise ValueError("Each item in the JSON array must be a dictionary")
+        item.pop('speaker_id', None)
+        item.pop('timestamp', None)
+
+    # rename speakers into 'Interviewer' and 'Candidate'
+    # identify speakers
+    speakers = set(item.get('speaker_name', 'Unknown') for item in data)
+
+    # assign 'Interviewer' to the speaker who asks the most questions
+    question_counts = {speaker: 0 for speaker in speakers}
 
     for item in data:
         sentence = item.get('sentence', '')
-        speaker_name = item.get('speaker_name', 'unknown')
+        speaker = item.get('speaker_name', 'Unknown')
+        if sentence.strip().endswith('?'):
+            question_counts[speaker] += 1
 
-        if len(sentence) >= 20:
-            if speaker_name == 'speaker 1':
-                speaker = "Interviewer"
-            elif speaker_name == 'speaker 2':
-                speaker = "Candidate"
-            else:
-                speaker = "Unknown"
+    # determine the speaker with the most questions
+    interviewer_speaker = max(question_counts, key=question_counts.get)
 
-            dialogue += f"{speaker}: {sentence}\n"
+    # map speakers to roles
+    speaker_mapping = {speaker: 'Candidate' for speaker in speakers}
+    speaker_mapping[interviewer_speaker] = 'Interviewer'
 
+    # generate the dialogue string
+    dialogue_lines = []
+    for item in data:
+        sentence = item.get('sentence', '')
+        speaker_name = item.get('speaker_name', 'Unknown')
+        speaker_role = speaker_mapping.get(speaker_name, 'Unknown')
+
+        # include only non-empty sentences
+        if sentence.strip():
+            dialogue_lines.append(f"{speaker_role}: {sentence.strip()}")
+
+    dialogue = '\n'.join(dialogue_lines)
     return dialogue
 
 
-# JSON minification
-def process_json(data: dict):
-    if not isinstance(data, dict):
-        return data
+# function for adding timestamp to an interviewer name
+def add_timestamp(
+    interviewer_name: str,
+    timestamp: str
+) -> str:
+    file_name = interviewer_name + timestamp
 
-    for item in data:
-        if isinstance(item, dict):
-            item.pop('speaker_id', None)
+    return file_name
+
+
+# function for requirements processing into a needed format
+def extract_requirements(
+    input_requirements: str,
+    gen_requirements: list
+) -> dict:
+    tech_requirements = [term.strip() for term in re.split(r'[,\n]+', input_requirements)]
+    combined_requirements = tech_requirements + gen_requirements
+
+    return {
+        'tech_requirements': tech_requirements,
+        'general_requirements': gen_requirements,
+        'all_requirements': combined_requirements
+    }
+
+
+# function to ensure the json is valid
+def validate_json(input_text: str) -> dict:
+    repaired_json = repair_json(input_text)
+    return json.loads(repaired_json)
+
+
+# function to create 2 dicts available for future parsing
+def process_categorized_answers(inputs: dict) -> dict:
+    categorized_answers = inputs['categorized_answers']
+    categorized_answers_json = validate_json(categorized_answers)
+
+    tech_requirements = inputs['tech_requirements']
+    gen_requirements = inputs['general_requirements']
+
+    soft_categorized_answers = [item for item in categorized_answers_json if item['Category'] in gen_requirements]
+    tech_categorized_answers = [item for item in categorized_answers_json if item['Category'] in tech_requirements]
+
+    return {
+        'soft_categorized_answers': soft_categorized_answers,
+        'tech_categorized_answers': tech_categorized_answers
+    }
+
+
+# debug function for logs
+def print_ai_message(ai_message):
+    print(f"Content:\n{ai_message.content}\n")
+
+
+def print_dict(data):
+    print(json.dumps(data, indent=2))
+
+
+def debug_step(name):
+    def debug_lambda(x):
+        print(f"\n{name} Output:")
+        print(f"Type of x: {type(x)}")
+        if isinstance(x, AIMessage):
+            print_ai_message(x)
         else:
-            pass
-
-    return data
-
-
-# OpenAI Request Decorator
-def openai_request_decorator(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        payload = await func(*args, **kwargs)
-        response = await client.chat.completions.create(
-            model=payload["model"],
-            messages=payload["messages"],
-            temperature=payload["temperature"],
-            top_p=payload["top_p"]
-        )
-        print("response has been collected")
-        choices = response.choices
-        extracted_content = choices[0].message.content
-
-        return extracted_content
-
-    return wrapper
-
-
-# OpenAI Requirement Handling
-def parse_requirements(requirements: str):
-    requirements_list = [line.strip(' ') for line in requirements.strip().split('\n') if line]
-    categories_listed = []
-
-    for category in requirements_list:
-        categories_listed.append(category)
-
-    return categories_listed
-
-
-# Feedback name incrementation
-async def generate_uuid_filename(filename: str):
-    return f"{filename}{uuid.uuid4()}"
+            print_dict(x)
+        return x
+    return RunnableLambda(debug_lambda)
 
 
 # Hardcoded variables for sections
@@ -97,8 +144,6 @@ def preprocess_data(data):
     data = re.sub(r'(:)\s*$', '', data, flags=re.MULTILINE)
     data = re.sub(r'""(.*?)""', r'\1', data, flags=re.DOTALL)
     data = re.sub(r'\n*---\n*', r'\n---\n', data)
-    # Commented out to preserve extra newlines
-    # data = re.sub(r'\n{3,}', '\n\n', data)
     lines = data.strip().split('\n')
 
     processed_lines = []
@@ -111,7 +156,6 @@ def preprocess_data(data):
         stripped_line = line.strip()
 
         if not stripped_line:
-            # Optionally, append a line break or a div for empty lines
             processed_lines.append('<br>')
             continue
 
@@ -147,19 +191,4 @@ def convert_to_html(data):
     )
     return html
 
-
-### High-order payload builder
-def payload_builder(fsp: str, prompt: str, system_content: str, model: str, temperature: float, top_p: float):
-    return {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_content},
-            {"role": "user", "content": "Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:"},
-            {"role": "user", "content": fsp},
-            {"role": "user", "content": "Here is the task with the actual data:"},
-            {"role": "user", "content": prompt}
-        ],
-        "top_p": top_p,
-        "temperature": temperature
-    }
 
