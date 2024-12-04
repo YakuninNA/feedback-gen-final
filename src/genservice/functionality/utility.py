@@ -8,8 +8,10 @@ from langchain_core.runnables import RunnableLambda
 
 
 # JSON to dialogue conversion
+import json
+
 def convert_json_to_dialogue(json_string):
-    # check if the input is valid json, if not, throw an error
+    # Check if the input is valid JSON, if not, throw an error
     try:
         data = json.loads(json_string)
     except json.JSONDecodeError as e:
@@ -18,18 +20,18 @@ def convert_json_to_dialogue(json_string):
     if not isinstance(data, list):
         raise ValueError("JSON data is not a list of dialogue entries")
 
-    # get rid of 'speaker_id' and 'timestamps'
+    # Get rid of 'speaker_id' and 'timestamps'
     for item in data:
         if not isinstance(item, dict):
             raise ValueError("Each item in the JSON array must be a dictionary")
         item.pop('speaker_id', None)
         item.pop('timestamp', None)
 
-    # rename speakers into 'Interviewer' and 'Candidate'
-    # identify speakers
+    # Rename speakers into 'Interviewer' and 'Candidate'
+    # Identify speakers
     speakers = set(item.get('speaker_name', 'Unknown') for item in data)
 
-    # assign 'Interviewer' to the speaker who asks the most questions
+    # Assign 'Interviewer' to the speaker who asks the most questions
     question_counts = {speaker: 0 for speaker in speakers}
 
     for item in data:
@@ -38,23 +40,25 @@ def convert_json_to_dialogue(json_string):
         if sentence.strip().endswith('?'):
             question_counts[speaker] += 1
 
-    # determine the speaker with the most questions
+    # Determine the speaker with the most questions
     interviewer_speaker = max(question_counts, key=question_counts.get)
 
-    # map speakers to roles
+    # Map speakers to roles
     speaker_mapping = {speaker: 'Candidate' for speaker in speakers}
     speaker_mapping[interviewer_speaker] = 'Interviewer'
 
-    # generate the dialogue string
+    # Generate the dialogue string
     dialogue_lines = []
     for item in data:
         sentence = item.get('sentence', '')
         speaker_name = item.get('speaker_name', 'Unknown')
         speaker_role = speaker_mapping.get(speaker_name, 'Unknown')
 
-        # include only non-empty sentences
+        # Include only non-empty sentences
         if sentence.strip():
-            dialogue_lines.append(f"{speaker_role}: {sentence.strip()}")
+            # **New Condition**: Include only sentences with 30 or more characters
+            if len(sentence.strip()) >= 30:
+                dialogue_lines.append(f"{speaker_role}: {sentence.strip()}")
 
     dialogue = '\n'.join(dialogue_lines)
     return dialogue
