@@ -20,7 +20,9 @@ templates = Jinja2Templates(directory="template/auth_templates")
 
 @router.get("/home")
 def get_base_page(request: Request):
-    return templates.TemplateResponse("home_page.html", {"request": request})
+    return templates.TemplateResponse(
+        "home_page.html",
+        {"request": request})
 
 
 @router.get("/registration", response_class=HTMLResponse)

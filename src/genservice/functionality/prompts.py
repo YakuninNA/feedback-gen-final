@@ -1,23 +1,16 @@
 qa_extraction_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_extraction}
-
-Examine this technical interview transcript very carefully:
-{processed_data}
+You task is to process a technical interview transcript.
 
 **Rules:**
-1. Extract all questions posed by the Interviewer;
-2. Extract all answers provided by the Candidate;
-3. Pair each question with its corresponding answer;
-4. Consolidate questions that are logically connected;
-5. Consolidate answers that are logically connected and pertain to the same question;
-6. Explicitly note if the Candidate hesitated, was unsure of the answer, or responded only after receiving a hint;
-7. **Do not fabricate any information;** be strict;
-8. **Do not exclude any information from the technical interview transcript;**
-9. **Do not include any additional information beyond what is provided;**
-10. **Ensure the Interviewer entity only asks questions;**
-11. **Ensure the Candidate entity only provides answers;**
-12. **Do not mix information from questions with answers.**
+1. Extract all questions posed by Interviewer, consolidate questions that are logically connected into one;;
+2. Pair each question with its corresponding answers by Candidate, consolidate answers that are logically connected and pertain to the same question;
+3. Explicitly note if the Candidate hesitated, was unsure of the answer, or responded only after receiving a hint;
+4. **Do not fabricate any information**, be strict;
+5. **Do not exclude any information from the technical interview transcript;**
+6. **Do not include any additional information beyond what is provided;**
+7. **Ensure the Interviewer entity only asks questions;**
+8. **Ensure the Candidate entity only provides answers;**
+9. **Do not mix information from questions with answers.**
 
 **Output Format:**
 Output must be valid JSON format with double quotes around keys and string values, ensure proper escaping:
@@ -29,14 +22,18 @@ Output must be valid JSON format with double quotes around keys and string value
   }}
 ]   
 ...
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_extraction}
+
+**Subject for processing:**
+Here is the technical interview transcript itself:
+{processed_data}
 """
 
 qa_polish_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_polish}
-
-Examine this data very carefully:
-{qa_extracted_data}
+You task is to process a technical interview transcript.
 
 **Rules:**
 1. **Extract all relevant information from the Candidate's answers to the corresponding Interviewer's questions;**
@@ -58,17 +55,18 @@ Output must be valid JSON format with double quotes around keys and string value
   }}
 ]   
 ...
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_polish}
+
+**Subject for processing:**
+Here is the technical interview transcript itself:
+{qa_extracted_data}
 """
 
 qa_categorization_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_categorization}
-
-Examine this data very carefully: 
-{qa_polished_data}
-
-Examine the following categories:
-{categories}
+You task is to map and categorize a technical interview transcript against a set of categories.
 
 **Rules:**
 1. Each Interviewer's question and Candidate's answer pair can be allocated to only one category;
@@ -82,17 +80,24 @@ Output must be valid JSON format with double quotes around keys and string value
   {{
     "Interviewer": [Interviewer's question here]",
     "Candidate": [Candidate's answer here]
+    "Category": [Category's name here]
   }}
 ]   
 ...
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_categorization}
+
+**Subjects for processing:**
+Here are the categories:
+{categories}
+Here is the technical interview transcript itself:
+{qa_polished_data}
 """
 
 requirements_extraction_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_requirements}
-
-Examine this data very carefully:
-{requirements}
+You task is to process input data into strictly formatted set of requirements.
  
 **Rules:**
 1. Process each requirement sequentially, line by line;
@@ -103,17 +108,21 @@ Examine this data very carefully:
 6. Consolidate requirements with similar topics;
 7. **Do not use numbering or bullet points of any kind;**
 8. Ensure each requirement is on a separate line.
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_requirements}
+
+**Subject for processing:**
+Here is the input data:
+{requirements}
 """
 
 engineering_basics_extraction_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_engineering_basics}
-
-Examine this data very carefully:
-{soft_categorized_answers}
+You task is to process a technical interview transcript.
 
 **Rules:**
-1. Ensure each section is no longer than 150 words;
+1. Ensure each section is no longer than 200 words;
 2. **Provide a comprehensive summary of the answer using ';' as a separator;**
 3. **Avoid adding any AI-generated remarks or additional information;**
 4. **Be strict yet fair; do not sugarcoat;**
@@ -131,21 +140,25 @@ Examine this data very carefully:
 ### **Experience with Agile/Scrum/Kanban:**
     - [Extracted Overview of the candidate's experience working with different methodologies, 1-3 sentences]
 ---
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_engineering_basics}
+
+**Subject for processing:**
+Here is the technical interview transcript itself:
+{soft_categorized_answers}
 """
 
 technical_skills_extraction_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_technical_skills}
-
-Examine this data very carefully:
-{tech_categorized_answers}
+You task is to process a technical interview transcript.
 
 **Rules:**
 1. Make a comprehensive summary of the Candidate's expertise for each category in {tech_requirements};
-2. **If a category in {tech_requirements} does not appear examined data, return [No questions asked];**
-3. **Do not use any additional information beyond what is provided in the examined data;**
-4. **Do not add any additional sections besides the categories provided in {tech_requirements};**
-5. The summary should highlight both strengths and shortcomings of the Candidate regarding each category;
+2. The summary should be factologial, meaning it should lack any self-imposed evaluation;
+3. **If a category in {tech_requirements} does not appear examined data, return [No questions asked];**
+4. **Do not use any additional information beyond what is provided in the examined data;**
+5. **Do not add any additional sections besides the categories provided in {tech_requirements};**
 6. Avoid using advanced vocabulary; speak in simple terms.
 
 **Output Format:**
@@ -157,17 +170,21 @@ Examine this data very carefully:
 ### **Category 3:**
      - [Insert Summary Here]   
 ---
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_technical_skills}
+
+**Subject for processing:**
+Here is the technical interview transcript itself:
+{tech_categorized_answers}
 """
 
 experience_extraction_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_experience}
-
-Examine this data very carefully:
-{soft_categorized_answers}
+You task is to process a technical interview transcript.
 
 **Rules:**
-1. Ensure each section is no longer than 150 words;
+1. Ensure each section is no longer than 200 words;
 2. **Provide a comprehensive summary of the answer using ';' as a separator;**
 3. **Avoid adding any AI-generated remarks or additional information;**
 4. **Be strict yet fair; do not sugarcoat;**
@@ -178,10 +195,10 @@ Examine this data very carefully:
 ---
 1. Experience:
 ### **Introduction:**
-     - [Extracted Answer] - must be tailored towards **{position_name}** position    
+     - [Extracted Answer] - 3-5 sentences, must be tailored towards **{position_name}** position    
 
 ### **Project Description:**
-     - [Extracted Answer] - must be tailored towards **{position_name}** position
+     - [Extracted Answer] - 3-5 sentences, must be tailored towards **{position_name}** position
 ---
 2. Product Area Impact:
 ### **Main Responsibilities:**
@@ -206,16 +223,29 @@ Examine this data very carefully:
 ### **Previous Mentoring Experience:**
      - [Extracted Answer]
 ---
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_experience}
+
+**Subject for processing:**
+Here is the technical interview transcript itself:
+{soft_categorized_answers}
 """
 
 interviewer_name_extraction_prompt_template = """
-Below is an example of the expected format. Do not quote this example in your response. Instead, follow this structure:
-{few_shot_interviewer_name}
-
-Examine this data very carefully:
-{transcript_name}
+You task is to process input data into strictly formatted document name.
 
 **Rules:**
-1. Extract only candidate's name and surname.
+1. Extract only candidate's name and surname;
+2. If no such data is can be extracted, set default name - NO_NAME_SURNAME.
+
+**Few-shot Example:**
+Below is an mock example. Do not quote this example in your response. Instead, follow its structure:
+{few_shot_interviewer_name}
+
+**Subject for processing:**
+Here is the input data:
+{transcript_name}
 """
 

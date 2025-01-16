@@ -10,6 +10,7 @@ from langchain_core.runnables import RunnableLambda
 # JSON to dialogue conversion
 import json
 
+
 def convert_json_to_dialogue(json_string):
     # Check if the input is valid JSON, if not, throw an error
     try:

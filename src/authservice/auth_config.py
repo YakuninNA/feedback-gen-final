@@ -1,4 +1,7 @@
-from fastapi_users.authentication import CookieTransport, AuthenticationBackend
+from fastapi_users.authentication import (
+    CookieTransport,
+    AuthenticationBackend
+)
 from fastapi_users.authentication import JWTStrategy
 
 from src.config import SECRET_AUTH

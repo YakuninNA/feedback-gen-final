@@ -42,9 +42,16 @@ from genservice.functionality.utility import (
 
 from src.config import API_KEY
 
-llm = ChatOpenAI(
+llm_mini = ChatOpenAI(
     model_name="gpt-4o-mini-2024-07-18",
     temperature=0.8,
+    top_p=0.25,
+    openai_api_key=API_KEY
+)
+
+llm_maxi = ChatOpenAI(
+    model_name="gpt-4o-2024-08-06",
+    temperature=0.85,
     top_p=0.25,
     openai_api_key=API_KEY
 )
@@ -146,14 +153,14 @@ technical_skills_chat_prompt = ChatPromptTemplate.from_messages([
 
 
 # initialize llm chains
-interviewer_name_extraction_chain = interviewer_name_extraction_extraction_chat_prompt | llm
-requirements_extraction_chain = requirements_extraction_chat_prompt | llm
-qa_extraction_chain = qa_extraction_chat_prompt | llm
-qa_polish_chain = qa_polish_chat_prompt | llm
-qa_categorization_chain = qa_categorization_chat_prompt | llm
-experience_extraction_chain = experience_extraction_chat_prompt | llm
-engineering_basics_chain = engineering_basics_chat_prompt | llm
-technical_skills_chain = technical_skills_chat_prompt | llm
+interviewer_name_extraction_chain = interviewer_name_extraction_extraction_chat_prompt | llm_mini
+requirements_extraction_chain = requirements_extraction_chat_prompt | llm_mini
+qa_extraction_chain = qa_extraction_chat_prompt | llm_maxi
+qa_polish_chain = qa_polish_chat_prompt | llm_mini
+qa_categorization_chain = qa_categorization_chat_prompt | llm_maxi
+experience_extraction_chain = experience_extraction_chat_prompt | llm_mini
+engineering_basics_chain = engineering_basics_chat_prompt | llm_mini
+technical_skills_chain = technical_skills_chat_prompt | llm_mini
 
 
 # function for parsing interviewer name into a coherent format

@@ -21,8 +21,8 @@ from genservice.functionality.langchain_pipeline import (
 
 from src.authservice.models import User
 from src.genservice.models import FeedbackGen
+from src.genservice.feedbacksdao import FeedbacksDAO
 from src.database import get_async_manager
-from src.genservice.crud import create_feedback
 from src.genservice.functionality.utility import general_requirements
 from src.genservice.schemas import FeedbackCreate
 
@@ -37,7 +37,7 @@ async def process_transcript_task(
     ctx, json_file, requirements, position, username, name, surname, filename, timestamp
 ):
     logger.info(f"Starting task for user {username}.")
-    db=None
+    db = None
     try:
         async with get_async_manager() as db:
             transcript_data = json.loads(json_file)
@@ -83,11 +83,11 @@ async def process_transcript_task(
                 technical_skills=feedback_components['technical_skills_result']
             )
 
-            new_feedback = await create_feedback(db=db, feedback_data=feedback_data)
-            await db.commit()
+            dict_feedback = feedback_data.dict()
+            feedback = await FeedbacksDAO.add_instance(**dict_feedback)
 
-            logger.info(f"Task completed successfully. Feedback ID: {new_feedback.id}")
-            return new_feedback.id
+            logger.info(f"Task completed successfully. Feedback ID: {feedback.id}")
+            return feedback.id
 
     except Exception as e:
         logger.exception(
@@ -104,5 +104,5 @@ class WorkerSettings:
     max_jobs = 50
     poll_interval = 1
     timeout = 250
-    job_timeout = 1000
+    job_timeout = 2000
     log_level = 'INFO'

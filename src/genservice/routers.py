@@ -1,7 +1,10 @@
 import json
 from datetime import datetime
 
-from arq.connections import create_pool, RedisSettings
+from arq.connections import (
+    create_pool,
+    RedisSettings
+)
 from fastapi import (
     APIRouter,
     UploadFile,
@@ -16,8 +19,8 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.templating import Jinja2Templates
 
+from src.authservice.dependencies import get_current_user
 from src.database import get_async_session
-from src.dependencies import fastapi_users
 from src.genservice.functionality.utility import convert_to_html
 from src.genservice.models import FeedbackGen
 
@@ -41,7 +44,7 @@ redis_settings = RedisSettings(
 @router.get("/home", response_class=HTMLResponse)
 async def functionality_home(
     request: Request,
-    user=Depends(fastapi_users.current_user())
+    user=Depends(get_current_user)
 ):
     return templates.TemplateResponse("functionality_page.html", {
         "request": request,
@@ -52,7 +55,7 @@ async def functionality_home(
 @router.get("/feedback_generation", response_class=HTMLResponse)
 async def get_registration_form(
     request: Request,
-    user=Depends(fastapi_users.current_user())
+    user=Depends(get_current_user)
 ):
     try:
         is_authenticated = user is True
@@ -78,7 +81,7 @@ async def process_transcript(
         transcript: UploadFile = File(...),
         requirements: str = Form(...),
         position: str = Form(...),
-        user=Depends(fastapi_users.current_user())
+        user=Depends(get_current_user)
 ):
     try:
         file_content = await transcript.read()
@@ -128,24 +131,11 @@ async def feedback_status(job_id: str):
     return {"status": "pending", "file_ready": False}
 
 
-@router.get("/feedback_status/{job_id}", response_model=dict)
-async def feedback_status(job_id: str):
-    redis = await create_pool(redis_settings)
-    result = await redis.get(job_id)
-
-    if result:
-        data = json.loads(result)
-        if "error" in data:
-            return {"status": "failed", "error": data["error"]}
-        return {"status": "completed", "filename": data["filename"], "file_ready": True}
-    return {"status": "pending", "file_ready": False}
-
-
 @router.get("/feedback_review")
 async def get_feedback_components(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
-        user=Depends(fastapi_users.current_user()),
+        user=Depends(get_current_user),
         page: int = Query(1, ge=1),
         limit: int = Query(10, ge=1, le=100)
 ):
